@@ -1,0 +1,45 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TheatreService {
+  apiUrl = `${environment.apiUrl}/theatre`; // Make sure the environment variable is set correctly
+
+  constructor(private http: HttpClient) { }
+
+  getTheatres(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
+
+  getTheatre(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/id/${id}`);
+  }
+
+  getTheatresByCity(city: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/city/${city}`);
+  }
+
+  getTheatresByMovieAndCity(city: string, movie: any): Observable<any[]>{
+    return this.http.get<any[]>(`${this.apiUrl}//City/${city}/movieId/${movie.id}`)
+  }
+
+  addTheatre(theatre: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, theatre);
+  }
+
+  editTheatre(theatre: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}`, theatre);
+  }
+
+  deleteTheatre(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+
+  getCities(): Observable<string[]>{
+    return this.http.get<string[]>(`${this.apiUrl}/getcity`);
+  }
+}
