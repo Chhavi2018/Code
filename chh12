@@ -43,3 +43,104 @@ export class TheatreService {
     return this.http.get<string[]>(`${this.apiUrl}/getcity`);
   }
 }
+
+
+
+---------------------------------------
+
+
+import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { TheatreService } from '../../services/theatre.service';
+
+@Component({
+  selector: 'app-theatres-management',
+  templateUrl: './theatres-management.component.html',
+  styleUrls: ['./theatres-management.component.css']
+})
+export class TheatresManagementComponent implements OnInit {
+  theatres: any[] = [];
+  cities: any[]=['Hyderabad',
+    'Delhi',
+    'Mumbai',
+    'Bangalore',
+    'Chennai',
+    'Pune',
+    'Kolkata'];
+  selectedTheatre: any = {};
+  selectedCity:string='';
+  isEdit = false;
+
+  constructor(
+    private modalService: NgbModal,
+    private theatreService: TheatreService
+  ) {}
+
+  ngOnInit(): void {
+   
+    this.loadTheatres();
+  }
+
+  loadTheatresByCity(city:string):void {
+    if(city){
+      this.theatreService.getTheatresByCity(city).subscribe(theatres=>{
+        this.theatres = theatres;
+      });
+    }
+    else{
+      this.loadTheatres();
+    }
+  }
+
+  
+  loadTheatres(): void {
+    this.theatreService.getTheatres().subscribe(theatres => {
+      this.theatres = theatres;
+    });
+  }
+
+  openModal(content: any, theatre?: any): void {
+    if (theatre) {
+      this.isEdit = true;
+      this.selectedTheatre = { ...theatre };
+    } else {
+      this.isEdit = false;
+      this.selectedTheatre = {};
+    }
+    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' });
+  }
+
+  onSubmit(form: NgForm): void {
+    if (form.valid) {
+      if (this.isEdit) {
+        this.theatreService.editTheatre(this.selectedTheatre).subscribe(() => {
+          this.loadTheatres();
+          this.modalService.dismissAll();
+        });
+      } else {
+        this.theatreService.addTheatre(this.selectedTheatre).subscribe(() => {
+          this.loadTheatres();
+          this.modalService.dismissAll();
+        });
+      }
+    }
+  }
+
+  editTheatre(content: any, theatre: any): void {
+    this.openModal(content, theatre);
+  }
+
+  deleteTheatre(theatre: any): void {
+    if (confirm('Are you sure you want to delete this theatre?')) {
+      this.theatreService.deleteTheatre(theatre.id).subscribe(() => {
+        this.loadTheatres();
+      });
+    }
+  }
+
+  onCityChange(city:string): void{
+    this.selectedCity =city;
+    this.loadTheatresByCity(city);
+  }
+}
