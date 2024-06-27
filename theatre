@@ -1,0 +1,166 @@
+using Book_My_Show_BL.Interfaces;
+using Book_My_Show_Entities;
+using Book_My_Show_ExceptionHandling;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+
+namespace Book_My_Show.Controllers
+{
+
+    [Route("api/[controller]")]
+    [ApiController]
+    
+    public class TheatreController : ControllerBase
+    {
+    
+        private ITheatreServiceBL _theatreServices;
+        private readonly ExceptionHandling _exceptionHandling;
+
+        public TheatreController(ITheatreServiceBL theatreServices, ExceptionHandling exceptionHandling)
+        {
+            _theatreServices = theatreServices;
+            _exceptionHandling = exceptionHandling;
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> Post(Theatre theatre)
+        {
+            try { 
+            _theatreServices.Add(theatre);
+            return new JsonResult("Added Successfully");
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpGet("id/{id}")]
+        public async Task<JsonResult> Get(int id)
+        {
+            try { 
+            var movie = await _theatreServices.GetById(id);
+            return new JsonResult(movie);
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpGet("city/{city}")]
+        public async Task<JsonResult> Get(string city)
+        {
+            try { 
+            var movie = await _theatreServices.GetByCity(city);
+            return new JsonResult(movie);
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> Get()
+        {
+            try { 
+            var moviesList = await _theatreServices.GetAll();
+            return new JsonResult(moviesList);
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<JsonResult> Delete(int id)
+        {
+            try { 
+            _theatreServices.Delete(id);
+            return new JsonResult("Deleted Successfully");
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpPut]
+        public async Task<JsonResult> Put(Theatre theatre)
+        {
+            try { 
+            _theatreServices.Update(theatre);
+            return new JsonResult("Updated Successfully");
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpGet("getcity")]
+        public async Task<JsonResult> GetCities()
+        {
+            try { 
+            var city = await _theatreServices.GetCities();
+            return new JsonResult(city);
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        [HttpGet("City/{City}/movieId/{movieId}")]
+        public async Task<JsonResult> GetTheatre(string City, int movieId)
+        {
+            try { 
+            var theatre = await _theatreServices.GetTheatre(City, movieId);
+            return new JsonResult(theatre);
+            }
+            catch (Exception ex)
+            {
+                await _exceptionHandling.HandleExceptionAsync(HttpContext, ex);
+                return new JsonResult(new { Message = ex.Message })
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+        }
+    }
+}
