@@ -1,0 +1,165 @@
+web api
+
+namespace Book_My_Show_DAL.Implementations
+{
+    public class MovieServices : IMovieServices
+    {
+        private readonly DapperContext _dapperContext;
+
+        public MovieServices(DapperContext dapperContext)
+        {
+            _dapperContext = dapperContext;
+        }
+
+        public async Task<Movie> Add(Movie movie)
+        {
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+
+                    var sqlQuery = "INSERT INTO Movie (Name,ImdbRating,Category,Genre,ReleaseDate,Duration,ActorName,ActressName,ThemePhotoPath) VALUES (@Name,@ImdbRating,@Category,@Genre,@ReleaseDate,@Duration,@ActorName,@ActressName,@ThemePhotoPath)";
+                    connection.Query<Movie>(sqlQuery);
+                    return movie;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+
+        }
+
+        public async Task<int> Delete(int id)
+        {
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var sqlQuery = "DELETE FROM Movie where Id = @id";
+                    var res = connection.Execute(sqlQuery, new { id });
+                    if (res != null)
+                    {
+                        return 1;
+                    }
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<Movie> Get(int id)
+        {
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var sqlQuery = "SELECT * FROM Movie where Id = @id";
+                    return connection.Query<Movie>(sqlQuery, new { @Id = id }).Single();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<Movie>> GetAll()
+        {
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var sqlQuery = "SELECT * FROM Movie";
+                    return connection.Query<Movie>(sqlQuery).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<Category>> GetByCategory()
+        {
+            using (var connection = _dapperContext.CreateConnection())
+            {
+                var sqlQuery = "SELECT * FROM Category";
+                var res = connection.Query<Category>(sqlQuery).ToList();
+                return res;
+            }
+        }
+
+        public async Task<List<Genre>> GetByGenre()
+        {
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var sqlQuery = "SELECT * FROM Genre";
+                    var res = connection.Query<Genre>(sqlQuery).ToList();
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<Movie>> GetByName(string Name)
+        {
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var sqlQuery = "SELECT * FROM Movie where Name like @Name";
+                    return connection.Query<Movie>(sqlQuery, new { @Name = Name }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<Movie>> GetByStarNames(string ActorName, string ActressName)
+        {
+            try { 
+            using (var connection = _dapperContext.CreateConnection())
+            {
+                var sqlQuery = "SELECT * FROM Movie where ActorName like @ActorName and ActressName like @ActressName";
+                return connection.Query<Movie>(sqlQuery, new { @ActorName = ActorName, @ActressName = ActressName }).ToList();
+            }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<int> Update(Movie movie)
+        {
+            try { 
+            using (var connection = _dapperContext.CreateConnection())
+            {
+                var sqlQuery = "UPDATE Movie SET Name = @Name, ImdbRating = @ImdbRating, Category = @Category, Genre = @Genre, ReleaseDate = @ReleaseDate, ActorName = @ActorName, ActressName = @ActressName, ThemePhotoPath = @ThemePhotoPath where Id = @Id";
+                var res = connection.Execute(sqlQuery, movie);
+                if (res != null)
+                {
+                    return 1;
+                }
+                return 0;
+            }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+    }
+}
