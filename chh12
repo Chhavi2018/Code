@@ -144,3 +144,173 @@ export class TheatresManagementComponent implements OnInit {
     this.loadTheatresByCity(city);
   }
 }
+
+
+
+===================================
+
+import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { MovieService } from '../../services/movie.service';
+import { Router } from '@angular/router';
+import { CategoryService } from '../../services/category.service';
+import { GenreService } from '../../services/genre.service';
+import { Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-movies-management',
+  templateUrl: './movies-management.component.html',
+  styleUrls: ['./movies-management.component.css']
+})
+export class MoviesManagementComponent implements OnInit {
+  movie: any = {};
+  movies: any[] = [];
+  selectedMovie: any = {};
+  isEdit = false;
+  selectedFile:File | null = null;
+  categories: any[]=[];
+  genres: any[]=[];
+
+  constructor(
+    private modalService: NgbModal,
+    private movieService: MovieService,
+    private router : Router,
+    private categoryService: CategoryService,
+    private genreService: GenreService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadMovies();
+    this.loadCategories();
+    this.loadGenres();
+  }
+
+  loadMovies(): void {
+    this.movieService.getMovies().subscribe(movies => {
+      this.movies = movies;
+    });
+  }
+
+  loadCategories(): void {
+    this.categoryService.getCategories().subscribe(
+      categories => {
+        this.categories = categories;
+      },
+      error => {
+        console.error('Error loading categories:', error);
+      }
+    );
+  }
+
+  loadGenres(): void {
+    this.genreService.getGenres().subscribe(
+      genres => {
+        this.genres = genres;
+      },
+      error => {
+        console.error('Error loading genres:', error);
+      }
+    );
+  }
+
+  openModal(content: any, movie?: any): void {
+    if (movie) {
+      this.isEdit = true;
+      this.selectedMovie = { ...movie };
+      this.selectedMovie.releaseDate = this.formatDateForInput(this.selectedMovie.releaseDate);
+      console.log(this.selectedMovie.releaseDate);
+    } else {
+      this.isEdit = false;
+      this.selectedMovie = {};
+    }
+    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' });
+  }
+
+  formatDateForInput(date: string): string {
+    const d = new Date(date);
+    const month = '' + (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = '' + d.getDate().toString().padStart(2, '0');
+    const year = d.getFullYear();
+    return `${year}-${month}-${day}`;
+  }
+
+  formatDate(event: any): void {
+    const date = new Date(event);
+    const formattedDate = [
+      
+      (date.getMonth() + 1).toString().padStart(2, '0'),
+      date.getDate().toString().padStart(2, '0'),
+      date.getFullYear()
+    ].join('-');
+    this.movie.releaseDate = formattedDate;
+  }
+
+  onSubmit(movieForm: any): void {
+    if (movieForm.valid) {
+      if (this.isEdit) {
+        this.movieService.editMovie(this.selectedMovie).subscribe(() => {
+          this.loadMovies();
+          this.modalService.dismissAll();
+        });
+      } else {
+        this.movieService.addMovie(this.selectedMovie).subscribe(() => {
+          this.loadMovies();
+          this.modalService.dismissAll();
+        });
+      }
+    }
+  }
+  uploadFile(): Observable<any> {
+    const formData = new FormData();
+    if(this.selectedFile){
+    formData.append('file', this.selectedFile);
+    }
+    return this.movieService.uploadImage(formData);
+  }
+
+  saveMovie(): void {
+    if (this.isEdit) {
+      this.movieService.editMovie(this.selectedMovie).subscribe(() => {
+        this.loadMovies();
+        this.modalService.dismissAll();
+      });
+    } else {
+      this.movieService.addMovie(this.selectedMovie).subscribe(() => {
+        this.loadMovies();
+        this.modalService.dismissAll();
+      });
+    }
+  }
+
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.selectedMovie.themePhotoPath = file.name;
+    }
+  }
+
+
+  editMovie(content: any, movie: any): void {
+    this.isEdit=true;
+    this.selectedMovie={...movie}
+    this.selectedMovie.releaseDate = this.formatDateForInput(this.selectedMovie.releaseDate); 
+    console.log(this.selectedMovie.releaseDate)  
+    this.modalService.open(content,{ariaLabelledBy:'modal-basic-title'})
+    this.openModal(content, movie);
+  }
+
+  deleteMovie(movie: any): void {
+    if (confirm('Are you sure you want to delete this movie?')) {
+      this.movieService.deleteMovie(movie.id).subscribe(() => {
+        this.loadMovies();
+      });
+    }
+  }
+
+  goToAddMovie():void{
+    this.router.navigate(['/add-movie']);
+  }
+  
+}
