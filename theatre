@@ -164,3 +164,48 @@ namespace Book_My_Show.Controllers
         }
     }
 }
+
+
+
+namespace Book_My_Show_ExceptionHandling
+{
+    public class ExceptionHandling
+    {
+        private readonly IHostingEnvironment _hostingEnvironment;
+        public ExceptionHandling(IHostingEnvironment hostingEnvironment) {
+            _hostingEnvironment = hostingEnvironment;
+        }
+        public async Task HandleExceptionAsync(HttpContext context, Exception exception)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+            var errorModel = new
+            {
+                context.Response.StatusCode,
+                Message = "An unexpected error occurred.Plrase try again later.",
+                Detail = _hostingEnvironment.IsDevelopment() ? exception.StackTrace : null
+            };
+
+            if (context.Request.Headers["Accept"].ToString().Contains("text/html"))
+            {
+                var ViewResult = new ViewResult
+                {
+                    ViewName ="Error",
+                    ViewData = new ViewDataDictionary<string>(new EmptyModelMetadataProvider(),new ModelStateDictionary())
+                    {
+                        Model = errorModel.Message
+                    }
+                };
+                var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
+                await ViewResult.ExecuteResultAsync(actionContext);
+            }
+            else
+            {
+                var result = new JsonResult(errorModel);
+                await result.ExecuteResultAsync(new ActionContext { HttpContext = context });
+            }
+        }
+    }
+}
+
