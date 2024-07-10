@@ -1,0 +1,40 @@
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace TestProject1
+{
+    [TestClass]
+    public class UnitTest1
+    {
+        [TestMethod]
+        public void TestMethod1()
+        {
+            IWebDriver driver = new ChromeDriver();
+            driver.Navigate().GoToUrl("https://demo.guru99.com/test/drag_drop.html");
+            driver.Manage().Window.Maximize();
+
+            // Locate the elements for the drag and drop actions
+            IWebElement amount5000 = driver.FindElement(By.XPath("//*[@id='fourth']/a"));
+            IWebElement sales = driver.FindElement(By.XPath("//*[@id='credit1']/a"));
+
+            // Targets for dragging "5000"
+            IWebElement debitAmountTarget = driver.FindElement(By.XPath("//*[@id='amt7']/li"));
+            IWebElement creditAmountTarget = driver.FindElement(By.XPath("//*[@id='amt8']/li"));
+
+            // Target for dragging "SALES"
+            IWebElement creditAccountTarget = driver.FindElement(By.XPath("//*[@id='loan']/li"));
+
+            // Perform the drag and drop actions
+            Actions action = new Actions(driver);
+            action.DragAndDrop(amount5000, debitAmountTarget).Build().Perform();
+            action.DragAndDrop(amount5000, creditAmountTarget).Build().Perform();
+            action.DragAndDrop(sales, creditAccountTarget).Build().Perform();
+            
+            // Additional verification or teardown code here
+            
+            driver.Quit();
+        }
+    }
+}
